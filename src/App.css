@@ -43,17 +43,13 @@
 
 
 .video-container {
-  position: relative; 
 
-  width: 800px; 
-  height: 400px;
 
-  border: dashed 1px black;
+  display: flex; 
 }
 
 .video-container>video, .video-container>canvas {
-  position: absolute; 
-  inset: 0; 
+
 }
 
 canvas {

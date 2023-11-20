@@ -93,7 +93,7 @@ export function createBallBounce(options?: BallBounceOptions) : BallBounceFuncti
             currentDeltaX *= elasticityX * -1; 
         }
         if(currentX >1){
-            currentX = 1; 
+            currentX = 0.9999; 
             currentDeltaX *= elasticityX * -1; 
         }
 
@@ -102,7 +102,8 @@ export function createBallBounce(options?: BallBounceOptions) : BallBounceFuncti
             currentDeltaY *= elasticityX * -1; 
         }
         if(currentY >1){
-            currentY = 1; 
+            //0.9999 so it's still visible
+            currentY = 0.9999; 
             currentDeltaY *= elasticityY * -1; 
         }
 

@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 import { Development } from './pages/Development';
 import { Production } from './pages/Production';
@@ -10,17 +10,10 @@ type Modes = 'development' | 'remote' | 'production';
 
 function App(){
 
-
-  const [mode, setMode] = useState<Modes>('production');
-
-  useEffect(() => {
-
-    console.log(document.location.search);
+  const mode = useMemo(() => {
     const params = new URL(document.location.toString()).searchParams;
     const mode = params.get("mode");
-
-    setMode(mode as Modes ?? 'production');
-
+    return mode ?? "production";
   }, []); 
 
   return (

@@ -77,3 +77,7 @@ button:focus-visible {
   position: fixed; 
   inset: 10px;
 }
+
+.development .hidden {
+  display: none; 
+}

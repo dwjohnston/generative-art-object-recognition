@@ -35,11 +35,31 @@ export function useTheWholeThing(artCanvasRef: RefObject<HTMLCanvasElement>, web
                 const webcam = webCamVideoRef.current;
                 const canvas = debugCanvasRef?.current ?? undefined;
                 const artCanvas = artCanvasRef.current;
-                
+
                 navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
 
                     if (webcam && artCanvas) {
                         webcam.srcObject = stream;
+
+                        webcam.addEventListener("loadeddata", () => {
+                            const canvasWidth = artCanvas.clientWidth;
+                            const canvasHeight = artCanvas.clientHeight;
+
+
+                            // This just makes the canvas and video the right size. 
+                            // Doesn't really matter main art canvas as we only really care about a 0-1 values. 
+                            if (canvas) {
+                                const ratio = webcam.videoHeight / webcam.videoWidth;
+                                webcam.style.width = canvasWidth + "px";
+                                webcam.style.height = canvasHeight * ratio + "px";
+
+                                canvas.style.width = canvasWidth + "px";
+                                canvas.style.height = canvasHeight * ratio + "px";
+                                canvas.width = webcam.videoWidth;
+                                canvas.height = webcam.videoHeight;
+                            }
+                        });
+
                         webcam.addEventListener("loadeddata", getPredictWebcam({ video: webcam, debugCanvas: canvas, faceLandmarker, handLandmarker, artCanvas, faceDetector, debugCallback }))
                     }
 
@@ -160,28 +180,15 @@ function getPredictWebcam(
         }
     }
 
-    const canvasWidth = artCanvas.clientWidth;
-    const canvasHeight = artCanvas.clientHeight;
 
-
-    // This just makes the canvas and video the right size. 
-    // Doesn't really matter main art canvas as we only really care about a 0-1 values. 
-    if (debugCanvas) {
-        const ratio = video.videoHeight / video.videoWidth;
-        video.style.width = canvasWidth + "px";
-        video.style.height = canvasHeight * ratio + "px";
-
-        debugCanvas.style.width = canvasWidth + "px";
-        debugCanvas.style.height = canvasHeight * ratio + "px";
-        debugCanvas.width = video.videoWidth;
-        debugCanvas.height = video.videoHeight;
-    }
 
     return async function predictWebcam() {
 
         const worldObjects: Array<WorldObjects> = [];
 
-
+        if(debugCtx){
+            debugCtx.clearRect(0, 0, debugCanvas?.width ?? 0, debugCanvas?.height ?? 0);
+        }
 
 
         // Now let's start detecting the stream.

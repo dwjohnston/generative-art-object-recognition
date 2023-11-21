@@ -36,38 +36,46 @@ export function useTheWholeThing(artCanvasRef: RefObject<HTMLCanvasElement>, web
                 const canvas = debugCanvasRef?.current ?? undefined;
                 const artCanvas = artCanvasRef.current;
 
-                navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
 
-                    if (webcam && artCanvas) {
-                        webcam.srcObject = stream;
+                if(!webcam?.src){
+                    navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
 
-                        webcam.addEventListener("loadeddata", () => {
-                            const canvasWidth = artCanvas.clientWidth;
-                            const canvasHeight = artCanvas.clientHeight;
+                        if (webcam && artCanvas) {
+                            webcam.srcObject = stream;
+    
+                            webcam.addEventListener("loadeddata", () => {
+                                const canvasWidth = artCanvas.clientWidth;
+                                const canvasHeight = artCanvas.clientHeight;
+    
+    
+                                // This just makes the canvas and video the right size. 
+                                // Doesn't really matter main art canvas as we only really care about a 0-1 values. 
+                                if (canvas) {
+                                    const ratio = webcam.videoHeight / webcam.videoWidth;
+                                    webcam.style.width = canvasWidth + "px";
+                                    webcam.style.height = canvasHeight * ratio + "px";
+    
+                                    canvas.style.width = canvasWidth + "px";
+                                    canvas.style.height = canvasHeight * ratio + "px";
+                                    canvas.width = webcam.videoWidth;
+                                    canvas.height = webcam.videoHeight;
+                                }
+                            });
+    
+                            webcam.addEventListener("loadeddata", getPredictWebcam({ video: webcam, debugCanvas: canvas, faceLandmarker, handLandmarker, artCanvas, faceDetector, debugCallback }))
+                        }
+    
+        
+                    });
+                }
+
+                else {
+                    webcam.addEventListener("play", getPredictWebcam({ video: webcam, debugCanvas: canvas, faceLandmarker, handLandmarker, artCanvas, faceDetector, debugCallback }))
+                    webcam.play();
+
+                }
 
 
-                            // This just makes the canvas and video the right size. 
-                            // Doesn't really matter main art canvas as we only really care about a 0-1 values. 
-                            if (canvas) {
-                                const ratio = webcam.videoHeight / webcam.videoWidth;
-                                webcam.style.width = canvasWidth + "px";
-                                webcam.style.height = canvasHeight * ratio + "px";
-
-                                canvas.style.width = canvasWidth + "px";
-                                canvas.style.height = canvasHeight * ratio + "px";
-                                canvas.width = webcam.videoWidth;
-                                canvas.height = webcam.videoHeight;
-                            }
-                        });
-
-                        webcam.addEventListener("loadeddata", getPredictWebcam({ video: webcam, debugCanvas: canvas, faceLandmarker, handLandmarker, artCanvas, faceDetector, debugCallback }))
-                    }
-
-                    const canvasContext = debugCanvasRef?.current?.getContext("2d");
-                    if (!canvasContext) {
-                        throw new Error("No canvas context");
-                    }
-                });
             });
 
 

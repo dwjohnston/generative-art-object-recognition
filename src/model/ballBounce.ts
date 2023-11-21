@@ -1,29 +1,26 @@
+
+export type XYPair = {
+    x: number; 
+    y: number; 
+}
+
 type BallBounceOptions = {
-    initialPosition?: {
-        x: number; 
-        y: number; 
-    }, 
-    initialDelta?: {
-        x: number; 
-        y: number; 
-    }
-
     /**
-     * Amount of delta to be added each tick
+     * Initial position
      */
-    gravity?: {
-        x: number; 
-        y: number; 
-    }, 
-
-
+    initialPosition?: XYPair, 
     /**
-     * Affects how much the ball will 
+     * Initial movement
      */
-    elasticity?: {
-        x: number; 
-        y: number
-    }
+    initialDelta?: XYPair
+    /**
+     * Delta to add every frame tick
+     */
+    gravity?: XYPair, 
+    /**
+     * Affects how the delta changes when the ball hits the walls 
+     */
+    elasticity?: XYPair
 }
 
 
@@ -46,9 +43,12 @@ const DEFAULT_BALL_OPTIONS : Required<BallBounceOptions> = {
     }
 
 }
+/**
+ * Either a straight XY value, or a function that takes the current position an returns an XY value. 
+ */
+type AdditionalDelta = XYPair| ((currentPosition: XYPair, currentDelta: XYPair) => XYPair)
 
-
-type BallBounceFunction = (additionalDelta? : {x: number, y: number})  =>  {x: number, y: number}; 
+type BallBounceFunction = (additionalDelta?: AdditionalDelta)  =>  XYPair; 
 
 export function createBallBounce(options?: BallBounceOptions) : BallBounceFunction {
 
@@ -77,9 +77,22 @@ export function createBallBounce(options?: BallBounceOptions) : BallBounceFuncti
         currentDeltaX += gravityX; 
         currentDeltaY += gravityY; 
 
+
         // And any changes from function args, if any
-        currentDeltaX += additionalDelta?.x ?? 0; 
-        currentDeltaY += additionalDelta?.y ?? 0 ; 
+        if(additionalDelta){
+            let additionalDeltaToUse : {x: number; y: number}; 
+            if(typeof additionalDelta === "function"){
+                additionalDeltaToUse = additionalDelta({x:currentX, y: currentY}, {x: currentDeltaX, y: currentDeltaY}); 
+            }
+            else {
+                additionalDeltaToUse = additionalDelta;
+            }
+
+            currentDeltaX += additionalDeltaToUse.x; 
+            currentDeltaY += additionalDeltaToUse.y; 
+        }
+
+
         
 
         // Update position

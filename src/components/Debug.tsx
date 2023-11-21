@@ -3,7 +3,7 @@ type DebugProps = {
 }
 
 export function Debug(props: DebugProps) {
-    return <pre>
+    return <pre className="debug">
         {JSON.stringify(props.data, null,2)}
     </pre>
 }

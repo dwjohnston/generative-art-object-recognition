@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { FilesetResolver, FaceLandmarker, DrawingUtils, HandLandmarker, FaceLandmarkerResult, HandLandmarkerResult, FaceDetector, FaceDetectorResult} from '@mediapipe/tasks-vision';
 import { createDrawpixelGridFunction } from '../draw/drawPixelGrid';
-import { createBallBounce } from '../model/ballBounce';
+import { XYPair, createBallBounce } from '../model/ballBounce';
 import { Debug } from '../components/Debug';
 import { useBoolean } from '../utils/useBoolean';
 
@@ -15,6 +15,7 @@ type WorldObjects = {
   y: number; 
   type: "face" | "hand"; 
 }
+
 
 
 function getPredictWebcam(
@@ -32,9 +33,78 @@ function getPredictWebcam(
   let handResults : HandLandmarkerResult | undefined = undefined; 
   let faceDetectorResults: FaceDetectorResult | undefined = undefined; 
 
-  const drawFn = createDrawpixelGridFunction(artCanvas, 10, 10, 0.01);
 
-  const ballFunction = createBallBounce();
+  const ballFunction = createBallBounce({
+    initialDelta: {
+        x: 0.008, 
+        y: -0.002
+    }, 
+    gravity: {
+        x: 0, 
+        y: 0.002
+    }
+  });
+
+
+  let frameCount = 0; 
+  const DECAY_COUNT  = 10; 
+  const N_CELLS = 24; 
+  const OBJECT_BOUNCE_ADD = 0.002; 
+  const OBJECT_BOUNCE_MULTIPLY = 0.8; 
+
+  const drawFn = createDrawpixelGridFunction(artCanvas, N_CELLS, N_CELLS, 0.01);
+
+
+  const frameArray = new Array(N_CELLS).fill(true).map((v) => {
+    return new Array(N_CELLS).fill(null); 
+  })
+
+  console.log(frameArray)
+
+  function ballDeltaFn(position: XYPair, currentDelta: XYPair ) {
+
+    const normalisedPosition = normalisePoint(position);
+
+    const existingObject = frameArray[normalisedPosition.x][normalisedPosition.y]; 
+    if(existingObject ===null){
+        return {
+            x: 0, 
+            y: 0
+        }
+    }
+
+    if (frameCount - existingObject > DECAY_COUNT){
+        return {
+            x: 0, 
+            y: 0
+        }
+    }
+
+
+    return {
+        // Remember that the additional delta is additive
+        // So if we want to reverse direction we need to double * -1  the existing value
+        x: (currentDelta.x + OBJECT_BOUNCE_ADD) * -1 * (1 + OBJECT_BOUNCE_MULTIPLY),   
+        y: (currentDelta.y + OBJECT_BOUNCE_ADD)*  -1 * (1 + OBJECT_BOUNCE_MULTIPLY)
+    }
+  }
+
+  function normalisePoint(point: XYPair) : XYPair {
+
+
+    return {
+        x: Math.floor(point.x * N_CELLS), 
+        y: Math.floor(point.y * N_CELLS), 
+    }
+}
+
+function denormalisePoint(point: XYPair): XYPair {
+    return {
+        x: point.x / N_CELLS, 
+        y: point.y / N_CELLS
+    }
+}
+
 
   return async function predictWebcam() {
 
@@ -137,17 +207,8 @@ function getPredictWebcam(
       }
     }
 
-    const newBallPosition = ballFunction(); 
-    drawFn([{...newBallPosition, color: "rgba(255, 255, 255)"}])
-
-
     if(faceDetectorResults?.detections){
-
-
-
       faceDetectorResults.detections.forEach((v) => {
-
-
       worldObjects.push({
         type:"face", 
         x: v.keypoints[0].x,
@@ -156,10 +217,45 @@ function getPredictWebcam(
       })
     }
 
-    // drawBlendShapes(videoBlendShapes, results.faceBlendshapes);
+
+    worldObjects.forEach((v) => {
+
+        const point = normalisePoint(v);
+        frameArray[point.x][point.y] = frameCount; 
+
+
+    }); 
+
+
+    const debug= [] as Array<unknown>; 
+    debug.push({frameCount})
+
+
+    // frameArray.forEach((x, xIndex) => {
+    //     x.forEach((y, yIndex) => {
+           
+    //         if(y !== null) {
+
+                
+    //             const decayLeft = DECAY_COUNT - (frameCount-y); 
+    //             const value = decayLeft/DECAY_COUNT; 
+                
 
 
 
+
+    //             if(value > 0){
+
+    //                 const denormPoint = denormalisePoint({x: xIndex, y: yIndex}); 
+
+    //                 drawFn([{
+    //                     ...denormPoint, 
+    //                     color: `rgba(0,255,255,1`
+    //                 }])
+    //             }              
+    //         }
+    //     }); 
+    // })
 
     drawFn(worldObjects.map((v) => {
       return {
@@ -169,9 +265,14 @@ function getPredictWebcam(
       }
     }));
 
-    debugCallback(newBallPosition)
+
+    const newBallPosition = ballFunction(ballDeltaFn); 
+    drawFn([{...newBallPosition, color: "rgba(255, 255, 255)"}])
+
+    debugCallback(debug)
 
     // Call this function again to keep predicting when the browser is ready.
+    frameCount++;
     window.requestAnimationFrame(predictWebcam);
 
   }

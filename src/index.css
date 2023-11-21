@@ -66,3 +66,18 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+
+
+.production video {
+  display: none; 
+}
+
+.production canvas, .production>.video-container {
+  position: fixed; 
+  inset: 10px;
+}
+
+.development .hidden {
+  display: none; 
+}

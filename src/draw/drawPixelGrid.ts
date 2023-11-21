@@ -23,7 +23,7 @@ type ColorPoint = {
 export function createDrawpixelGridFunction(canvas: HTMLCanvasElement, nXCells: number, nYCells: number, opacity: number ) {
 
 
-    const ctx = canvas.getContext("2d"); 
+    const ctx = canvas.getContext("2d") as CanvasRenderingContext2D; 
     if(!ctx){
         throw new Error("2d context did not exist");
     }
@@ -34,14 +34,12 @@ export function createDrawpixelGridFunction(canvas: HTMLCanvasElement, nXCells: 
     const cellWidth = Math.floor(canvasWidth/nXCells);
     const cellHeight = Math.floor(canvasHeight/nYCells); 
 
-    ctx.fillStyle = "rgba(0,0,0,1)"; 
+    ctx.fillStyle = "rgba(1,1,1,1)"; 
     ctx.fillRect(0,0, canvasWidth, canvasHeight);
 
 
 
     function normaliseColorPoint(cp: ColorPoint) : ColorPoint {
-
-
         return {
             x: Math.floor(cp.x * nXCells), 
             y: Math.floor(cp.y * nYCells), 
@@ -52,6 +50,7 @@ export function createDrawpixelGridFunction(canvas: HTMLCanvasElement, nXCells: 
     return (colorPoints: Array<ColorPoint>) => {
         ctx.fillStyle = `rgba(0, 0, 0, ${opacity})`; 
         ctx.fillRect(0, 0, canvasWidth, canvasHeight); 
+
 
         const buckets: Record<string, Array<ColorPoint>> = {}; 
 

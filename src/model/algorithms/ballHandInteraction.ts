@@ -13,7 +13,8 @@ type WorldObjects = {
 
 
 export const ballHandInteraction: AbstractAlgorithm = (options) => {
-    const { video, debugCanvas, faceLandmarker, handLandmarker, artCanvas, faceDetector, debugCallback } = options;
+    const { video, debugCanvas, artCanvas, mediapipe, debugCallback } = options;
+    const {faceDetector, faceLandmarker, handLandmarker } = mediapipe; 
 
 
     const debugCtx = debugCanvas?.getContext("2d");

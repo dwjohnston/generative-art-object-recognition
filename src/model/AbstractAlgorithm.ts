@@ -1,4 +1,14 @@
-import { FaceDetector, FaceLandmarker, HandLandmarker } from "@mediapipe/tasks-vision";
+import { FaceDetector, FaceLandmarker, HandLandmarker, ObjectDetector, PoseLandmarker } from "@mediapipe/tasks-vision";
+
+
+
+type MediapipeModels = {
+    faceLandmarker: FaceLandmarker,
+    handLandmarker: HandLandmarker,
+    faceDetector: FaceDetector,
+    objectDetector: ObjectDetector, 
+    poseLandmaker: PoseLandmarker,
+}
 
 export type AbstractAlgorithmInput = {
     /**
@@ -19,9 +29,8 @@ export type AbstractAlgorithmInput = {
     /**
      * Mediapipe models
      */
-    faceLandmarker: FaceLandmarker,
-    handLandmarker: HandLandmarker,
-    faceDetector: FaceDetector,
+    mediapipe: MediapipeModels; 
+
 
     /**
      * Optional function provide debug information to the rest of the application

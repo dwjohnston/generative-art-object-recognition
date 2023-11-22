@@ -30,7 +30,7 @@ export function useTheWholeThing(options: TheWholeThingOptions): {
             console.log("Does this")
 
             instantiateModels().then((v) => {
-                const [faceLandmarker, handLandmarker, faceDetector] = v;
+                const [faceLandmarker, handLandmarker, faceDetector, objectDetector, poseLandmaker] = v;
 
                 const constraints = {
                     video: true
@@ -66,7 +66,10 @@ export function useTheWholeThing(options: TheWholeThingOptions): {
                                 }
                             });
     
-                            webcam.addEventListener("loadeddata", algorithm({ video: webcam, debugCanvas: canvas, faceLandmarker, handLandmarker, artCanvas, faceDetector, debugCallback }))
+                            webcam.addEventListener("loadeddata", algorithm({ video: webcam, debugCanvas: canvas,  artCanvas, debugCallback, 
+                            mediapipe: {
+                                faceLandmarker, handLandmarker,  faceDetector, objectDetector, poseLandmaker
+                            } }))
                         }
     
         
@@ -76,7 +79,30 @@ export function useTheWholeThing(options: TheWholeThingOptions): {
                 else {
 
                     if(webcam && artCanvas) {
-                        webcam.addEventListener("play", algorithm({ video: webcam, debugCanvas: canvas, faceLandmarker, handLandmarker, artCanvas, faceDetector, debugCallback }))
+                        webcam.addEventListener("play", algorithm({ video: webcam, debugCanvas: canvas,  artCanvas, debugCallback, 
+                            mediapipe: {
+                                faceLandmarker, handLandmarker,  faceDetector, objectDetector, poseLandmaker
+                            } }))        
+                            
+                            webcam.addEventListener("play", () => {
+                                const canvasWidth = artCanvas.clientWidth;
+                                const canvasHeight = artCanvas.clientHeight;
+    
+    
+                                // This just makes the canvas and video the right size. 
+                                // Doesn't really matter main art canvas as we only really care about a 0-1 values. 
+                                if (canvas) {
+                                    const ratio = webcam.videoHeight / webcam.videoWidth;
+                                    webcam.style.width = canvasWidth + "px";
+                                    webcam.style.height = canvasHeight * ratio + "px";
+    
+                                    canvas.style.width = canvasWidth + "px";
+                                    canvas.style.height = canvasHeight * ratio + "px";
+                                    canvas.width = webcam.videoWidth;
+                                    canvas.height = webcam.videoHeight;
+                                }
+                            });
+
                         webcam.play();
     
                     }

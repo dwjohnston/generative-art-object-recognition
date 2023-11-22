@@ -1,6 +1,6 @@
-import { FaceDetector, FaceLandmarker, FilesetResolver, HandLandmarker } from "@mediapipe/tasks-vision";
+import { FaceDetector, FaceLandmarker, FilesetResolver, HandLandmarker, ObjectDetector, PoseLandmarker } from "@mediapipe/tasks-vision";
 
-export async function instantiateModels() : Promise<[FaceLandmarker, HandLandmarker, FaceDetector]> {
+export async function instantiateModels() : Promise<[FaceLandmarker, HandLandmarker, FaceDetector, ObjectDetector, PoseLandmarker]> {
     const vision = await FilesetResolver.forVisionTasks(
       // path/to/wasm/root
       "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
@@ -33,9 +33,28 @@ export async function instantiateModels() : Promise<[FaceLandmarker, HandLandmar
       },
       runningMode: "VIDEO"
     }); 
+
+    const objectDetector = ObjectDetector.createFromOptions(vision, {
+      baseOptions: {
+        modelAssetPath: `https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite`,
+        delegate: "GPU", 
+        
+      },
+      scoreThreshold: 0.5,
+      runningMode: "VIDEO"
+    });
+
+    const poseLandmaker = PoseLandmarker.createFromOptions(vision, {
+      baseOptions: {
+        modelAssetPath: `https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task`,
+        delegate: "GPU"
+      },
+      runningMode: "VIDEO",
+      numPoses: 5
+    });
   
   
   
-    return Promise.all([faceLandmarker, handLandmarker, faceDetector]);
+    return Promise.all([faceLandmarker, handLandmarker, faceDetector, objectDetector, poseLandmaker]);
   }
   

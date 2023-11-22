@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useTheWholeThing } from "../model/theWholeThing";
+import { ballHandInteraction } from "../model/algorithms/ballHandInteraction";
 export function Production() {
 
 
@@ -17,7 +18,7 @@ export function Production() {
     },[])
 
 
-    useTheWholeThing(artCanvasRef, webCamVideoRef);
+    useTheWholeThing({artCanvasRef, webCamVideoRef, algorithm: ballHandInteraction});
 
     return <div className="production">
         <div className="video-container" ref={containerRef}>

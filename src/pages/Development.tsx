@@ -4,6 +4,7 @@ import { useTheWholeThing } from '../model/theWholeThing';
 
 import party from "../assets/party.mp4";
 import subway from "../assets/subway.mp4";
+import { ballHandInteraction } from '../model/algorithms/ballHandInteraction';
 
 const map = {party, subway}
 const SIZE = 400; 
@@ -13,7 +14,7 @@ export function Development() {
   const artCanvasRef = useRef<HTMLCanvasElement>(null);
   const debugCanvasRef = useRef<HTMLCanvasElement>(null);
 
-  useTheWholeThing(artCanvasRef, webCamVideoRef, debugCanvasRef);
+  useTheWholeThing({artCanvasRef, webCamVideoRef, debugCanvasRef, algorithm: ballHandInteraction});
 
   const {isHideCam, isHideDebug, videoSource} = useMemo(() => {
     const params = new URL(document.location.toString()).searchParams;
